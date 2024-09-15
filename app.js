@@ -22,7 +22,7 @@ app.get("/login",(req,res)=>{
 })
 
 
-const peerServer = PeerServer({port:9000})
+const peerServer = PeerServer({path:"/peerjs"})
 
 io.on("connection", (socket) => { // connect
     const Room = 20;
