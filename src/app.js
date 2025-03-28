@@ -8,7 +8,7 @@ const app = express();
 const server = http.createServer(app);
 const io = socketIO(server);
 const corsOptions = {
-    origin: "https://trendyt.netlify.app",
+    origin: "http://localhost:3000",
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     credentials: true,
     optionsSuccessStatus: 204,
@@ -22,7 +22,8 @@ app.get("/login",(req,res)=>{
 })
 
 
-const peerServer = PeerServer({path:"/peerjs"})
+// const peerServer = PeerServer({path:"/peerjs",port:9000})
+
 
 io.on("connection", (socket) => { // connect
     const Room = 20;
