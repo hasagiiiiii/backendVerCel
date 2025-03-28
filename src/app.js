@@ -1,30 +1,28 @@
 const express = require("express");
-const http = require("http");
-const socketIO = require("socket.io");
+const { createServer } = require("http");
+const { Server } = require("socket.io");
 const cors = require("cors");
 const { v4 } = require("uuid");
-const { PeerServer } = require("peer");
-const app = express();
-const server = http.createServer(app);
-const io = socketIO(server);
-const corsOptions = {
-  origin: "https://trendyttesst.netlify.app/",
-  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  credentials: true,
-  optionsSuccessStatus: 204,
-};
 
-app.use(cors(corsOptions));
+const app = express();
+const server = createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: "https://trendyttesst.netlify.app", // Cho phép kết nối từ Netlify
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+});
+
+app.use(cors());
 
 app.get("/login", (req, res) => {
   const idUser = v4();
   res.json(idUser);
 });
 
-// const peerServer = PeerServer({path:"/peerjs",port:9000})
-
 io.on("connection", (socket) => {
-  // connect
   const Room = 20;
   socket.on("createRoom", (idUser) => {
     socket.emit("createRoomResponse", Room);
@@ -34,31 +32,14 @@ io.on("connection", (socket) => {
   socket.on("joinRoom", (idUser, roomId) => {
     socket.join(roomId);
     socket.broadcast.to(roomId).emit("user-connected", idUser);
-    console.log(`User ${idUser} joined room ${roomId}`);
-  });
-  socket.on("toggleCamera", (idUser, roomId, isActiveCamera) => {
-    socket.broadcast
-      .to(roomId)
-      .emit("toggleCameraInRoom", idUser, isActiveCamera);
   });
 
-  socket.on("toggleMic", (idUser, roomId, isActiveMic) => {
-    socket.broadcast.to(roomId).emit("toggleMicInRoom", idUser, isActiveMic);
+  socket.on("disconnect", () => {
+    console.log("User disconnected");
   });
-  socket.on("shareScreenInRoom", (idUser, roomId) => {
-    socket.broadcast.to(roomId).emit("shareScreenInRoom", idUser);
-    console.log("User Share Screen", idUser);
-  });
-  // socket.on("shareScreen",(idUser,roomId,screenStream)=>{
-  //     socket.broadcast.to(roomId).emit("shareScreenInRoom",idUser,screenStream)
-  //     console.log("ShareScreen",screenStream)
-  // })
-  // socket.on("stopShareScreen",(idUser,roomId)=>{
-  //     socket.broadcast.to(roomId).emit("stopShareScreenInRoom",idUser)
-  // })
-  socket.on("disconnect", () => {});
 });
 
+// Chạy server trên cổng 5000
 server.listen(5000, () => {
   console.log(`Server is running on port 5000`);
 });
